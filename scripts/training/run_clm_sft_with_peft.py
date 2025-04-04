@@ -21,6 +21,9 @@ https://huggingface.co/models?filter=text-generation
 """
 # You can also adapt this script on your own causal language modeling task. Pointers for this are left as comments.
 
+import ctypes
+ctypes.cdll.LoadLibrary('/opt/share/modules/spack/v24.09/linux-ubuntu22.04-x86_64_v4/gcc-11.4.0/gcc-13.3.0-cago4jnrborkiq5whh7fnng7w3epao7k/lib64/libstdc++.so.6')
+
 import logging
 import math
 import os
@@ -349,8 +352,8 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         torch_dtype=torch_dtype,
-        low_cpu_mem_usage=model_args.low_cpu_mem_usage,
-        device_map=device_map,
+        # low_cpu_mem_usage=model_args.low_cpu_mem_usage,
+        # device_map=device_map,
         quantization_config=quantization_config,
         attn_implementation="flash_attention_2" if training_args.use_flash_attention_2 else "sdpa"
     )

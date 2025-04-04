@@ -12,8 +12,8 @@ lora_dropout=0.05
 pretrained_model=$work_dir/LLM-Research/Meta-Llama-3.1-8B-Instruct
 tokenizer_name_or_path=${pretrained_model}
 dataset_dir=$work_dir/LLM-Research/dataset
-per_device_train_batch_size=1
-per_device_eval_batch_size=1
+per_device_train_batch_size=8
+per_device_eval_batch_size=8
 gradient_accumulation_steps=8
 max_seq_length=2048
 output_dir=$work_dir/output
@@ -34,14 +34,19 @@ export MASTER_PORT=8111
 source $work_dir/scripts/get_master_addr.sh
 source $work_dir/scripts/set_env_vars.sh
 
-torchrun $work_dir/scripts/training/run_clm_sft_with_peft.py \
+torchrun \
+    --nnodes ${NNODES} \
+    --nproc_per_node ${NPROC_PER_NODE} \
+    --node_rank ${NODE_RANK} \
+    --master_addr ${MASTER_ADDR} \
+    --master_port ${MASTER_PORT} \
+    $work_dir/scripts/training/run_clm_sft_with_peft.py \
     --model_name_or_path ${pretrained_model} \
     --tokenizer_name_or_path ${tokenizer_name_or_path} \
     --dataset_dir ${dataset_dir} \
     --per_device_train_batch_size ${per_device_train_batch_size} \
     --per_device_eval_batch_size ${per_device_eval_batch_size} \
     --do_train \
-    --low_cpu_mem_usage \
     --do_eval \
     --seed $RANDOM \
     --bf16 \
@@ -71,4 +76,5 @@ torchrun $work_dir/scripts/training/run_clm_sft_with_peft.py \
     --torch_dtype bfloat16 \
     --validation_file ${validation_file} \
     --load_in_kbits 16 \
-    --ddp_find_unused_parameters False
+    --ddp_find_unused_parameters False \
+    --deepspeed $work_dir/LLM-Research/ds_config/zero3_offload.json
